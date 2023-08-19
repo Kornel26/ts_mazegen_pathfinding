@@ -1,3 +1,4 @@
 import { Maze } from "./maze";
+import { UI } from "./ui";
 
-const maze = new Maze(30, 20);
+const ui = new UI();
