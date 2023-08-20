@@ -1,4 +1,6 @@
+import { MazeAlgorithms } from "./interfaces/MazeAlgorithms";
 import { Cell } from "./models/Cell";
+import { UI } from "./ui";
 
 export class Maze {
 
@@ -12,7 +14,10 @@ export class Maze {
     private maze: Cell[] = [];
     private length: number;
 
+    private ui: UI;
+
     constructor(width: number, height: number, cellSize?: number) {
+        this.ui = new UI(this.algorithms);
         this.width = width;
         this.height = height;
         this.length = this.width * this.height;
@@ -21,7 +26,7 @@ export class Maze {
         this.canvas.height = this.height * this.cellSize;
         this.ctx = this.canvas.getContext('2d') as CanvasRenderingContext2D;
         this.initMaze();
-        this.depthFirstAsync(this.maze[Math.floor(Math.random() * this.maze.length)]);
+        //this.depthFirstAsync(this.maze[Math.floor(Math.random() * this.maze.length)]);
     }
 
     private initMaze(): void {
@@ -96,6 +101,11 @@ export class Maze {
             b.top = false;
         }
     }
+
+    private readonly algorithms: MazeAlgorithms = {
+        'depthFirst': this.depthFirst,
+        'depthFirstAsync': this.depthFirstAsync
+    };
 
     private depthFirst(start: Cell): void {
         this.draw();

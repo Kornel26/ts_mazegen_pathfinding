@@ -1,4 +1,4 @@
 import { Maze } from "./maze";
 import { UI } from "./ui";
 
-const ui = new UI();
+const maze = new Maze(32, 32);
