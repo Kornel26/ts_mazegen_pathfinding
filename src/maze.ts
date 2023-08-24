@@ -1,6 +1,5 @@
 import { MazeAlgorithms } from "./interfaces/MazeAlgorithms";
 import { Cell } from "./models/Cell";
-import { UI } from "./ui";
 
 export class Maze {
 
@@ -10,14 +9,12 @@ export class Maze {
 
     private canvas: HTMLCanvasElement;
     private ctx: CanvasRenderingContext2D;
+    private genSelect: HTMLSelectElement;
 
     private maze: Cell[] = [];
     private length: number;
 
-    private ui: UI;
-
     constructor(width: number, height: number, cellSize?: number) {
-        this.ui = new UI(this.algorithms);
         this.width = width;
         this.height = height;
         this.length = this.width * this.height;
@@ -26,7 +23,26 @@ export class Maze {
         this.canvas.height = this.height * this.cellSize;
         this.ctx = this.canvas.getContext('2d') as CanvasRenderingContext2D;
         this.initMaze();
-        //this.depthFirstAsync(this.maze[Math.floor(Math.random() * this.maze.length)]);
+        this.genSelect = document.querySelector('#generationSelect') as HTMLSelectElement;
+        this.populateGenerationSelect();
+        this.registerEventHandlers();
+    }
+
+    private populateGenerationSelect(): void {
+        for (const [key, value] of Object.entries(this.algorithms)) {
+            const option: HTMLOptionElement = document.createElement('option');
+            option.value = key;
+            option.textContent = key;
+            this.genSelect.appendChild(option);
+        }
+    }
+
+    private registerEventHandlers(): void {
+        this.genSelect.addEventListener('change', (e: Event) => {
+            const selected = this.genSelect.value;
+            console.log(selected);
+            this.runAlgorithm(selected);
+        });
     }
 
     private initMaze(): void {
@@ -37,7 +53,7 @@ export class Maze {
         }
     }
 
-    public draw(): void {
+    private draw(): void {
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
         this.maze.forEach((cell: Cell) => {
             const x = cell.x * this.cellSize;
@@ -103,24 +119,23 @@ export class Maze {
     }
 
     private readonly algorithms: MazeAlgorithms = {
-        'depthFirst': this.depthFirst,
-        'depthFirstAsync': this.depthFirstAsync
+        'depthFirst': this.depthFirst
     };
 
-    private depthFirst(start: Cell): void {
-        this.draw();
-        let current = start;
-        current.visited = true;
-        let next = this.unvisitedNeightbour(current);
-        while (this.unvisitedNeightbour(current)) {
-            next.visited = true;
-            this.removeWalls(current, next);
-            current = next;
-            this.depthFirst(current);
+    public getAlgorithms(): MazeAlgorithms {
+        return this.algorithms;
+    }
+
+    public runAlgorithm(algorithm: string): void {
+        const selectedAlgorithm = this.algorithms[algorithm];
+        if(selectedAlgorithm !== undefined){
+            selectedAlgorithm(this.maze[0]);
+        } else {
+            console.error(`Algorithm '${algorithm}' not found.`);
         }
     }
 
-    private async depthFirstAsync(start: Cell): Promise<void> {
+    private async depthFirst (start: Cell): Promise<void> {
         this.draw();
         let current = start;
         current.visited = true;
@@ -131,9 +146,8 @@ export class Maze {
             current = next;
             await new Promise(resolve => setTimeout(resolve, 10));
             this.draw();    
-            await this.depthFirstAsync(current);
+            await this.depthFirst(current);
             next = this.unvisitedNeightbour(current);
         }
     }
-
 }
